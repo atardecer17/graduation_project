@@ -1,6 +1,9 @@
 import logging; logging.basicConfig(level=logging.INFO)
 
-import asyncio, os, json, time
+import asyncio
+import os
+import json
+
 from aiohttp import web
 from jinja2 import Environment, FileSystemLoader
 
@@ -8,6 +11,7 @@ from config import configs
 
 import orm
 from coroweb import add_routes, add_static
+
 
 
 # jinja2初始化
@@ -20,6 +24,7 @@ def init_jinja2(app, **kw):
         'variable_start_string': kw.get('variable_start_string', '{{'),
         'variable_end_string': kw.get('variable_end_string', '}}'),
         'auto_reload': kw.get('auto_reload', True)
+
     }
     path = kw.get('path', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates'))
     logging.info('set jinja2 template path: %s' % path)
@@ -32,7 +37,7 @@ def init_jinja2(app, **kw):
 
 # middleware改变URL的输入、输出，甚至可以决定不继续处理而直接返回。
 # middleware的用处就在于把通用的功能从每个URL处理函数中拿出来，集中放到一个地方。
-# 还没搞懂middleware是如何调用的, middleware 即从一开始从后往前调用 相当于装饰器对handler进行装饰
+# 还没搞懂middleware是如何调用的, middleware 即从一开始从前往后调用 相当于装饰器对handler进行装饰
 
 # 记录URL日志
 async def logger_factory(app, handler):
@@ -45,8 +50,10 @@ async def logger_factory(app, handler):
 async def response_factory(app, handler):
     async def response(request):
         logging.info('Response handler......')
-        # 规定将handler的返回值确定为字典类 不行！
+        # 目前只用模板作为返回对象 先只用字典
         r = await handler(request)
+        if isinstance(r, web.StreamResponse):
+            return r
         template = r.get('__template__')
         # 关于body中模板的调用有点不理解！！
         if template:
@@ -55,7 +62,7 @@ async def response_factory(app, handler):
             return resp
         # 如果没有template json.dumps()中各参数的意义不太明确！！！
         else:
-            resp = web.Response(body=json.dumps(r, ensure_ascii=False, default=lambda o:o.__dict__).encode('utf-8'))
+            resp = web.Response(body=json.dumps(r, ensure_ascii=False, default=lambda o: o.__dict__).encode('utf-8'))
             resp.content_type = 'application/json;charset=utf-8'
             return resp
     return response
@@ -74,7 +81,7 @@ async def init(loop):
     init_jinja2(app)
     add_routes(app, 'handlers')
     add_static(app)
-    srv = await loop.create_server(app.make_handler(), '127.0.0.1', 9000)
+    srv = await loop.create_server(app.make_handler(), '127.0.0.1', 9004)
     logging.info('server started at http://127.0.0.1:9000')
     return srv
 

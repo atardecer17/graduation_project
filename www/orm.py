@@ -4,7 +4,8 @@ orm映射的基类Model 各种Field如stringfield， floatfield, booleanfield, i
 modelmetaclass
 '''
 
-import asyncio, aiomysql
+import aiomysql
+import asyncio
 import logging
 
 
@@ -37,7 +38,7 @@ async def select(sql, args, size=None):
                 result = await cur.fetchmany(size)
             else:
                 result = await cur.fetchall()
-        logging.info('rows returned: %s' %len(result))
+        logging.info('rows returned: %s' % len(result))
         return result
 
 # 对数据库进行删除，插入，更新，并返回影响结果行数并自动提交
@@ -68,12 +69,12 @@ class Field:
         self.default = default
 
     def __str__(self):
-        return '<%s, %s:%s>'%(self.__class__.__name__, self.column_type, self.name)
+        return '<%s, %s:%s>' % (self.__class__.__name__, self.column_type, self.name)
 
 
 # 定义StringField
 class StringField(Field):
-    def __init__(self, name=None, primary_key=False, default=None, column_type='varchar(100)'):
+    def __init__(self, name=None, primary_key=False, default=None, column_type='varchar(50)'):
         super().__init__(name, column_type, primary_key, default)
 
 
@@ -100,12 +101,38 @@ class TextField(Field):
     def __init__(self, name=None, default=None):
         super().__init__(name, 'text', False, default)
 
+
+# 1	string
+# 2	integer
+# 3	float
+# 4	bool
+# 5	text
+
+def bigdata_handler(attrs, f, t):
+    """用于有大量中文字段时"""
+    for i in range(len(f)):
+        if f[i] == 'ID':
+            attrs[f[i]] = IntegerField(name=f[i], primary_key=True)
+            continue
+        if t[i] == 1:
+            attrs[f[i]] = StringField(name=f[i])
+        if t[i] == 2:
+            attrs[f[i]] = IntegerField(name=f[i], default=None)
+        if t[i] == 3:
+            attrs[f[i]] = FloatField(name=f[i], default=None)
+        if t[i] == 4:
+            attrs[f[i]] = BooleanField(name=f[i])
+
+
 # 定义modelmetaclass 扫描继承自model的类 并对其类属性进行收集，整理，检查，
 # 并添加额外的一些额外的属性到类属性中以便于类中各种数据库操作函数的书写
 class Modelmetaclass(type):
     def __new__(cls, name, bases, attrs):
         if name == 'Model':
             return type.__new__(cls, name, bases, attrs)
+        # 如果创建的类的字段很多则就如此添加
+        if name == 'Content':
+            bigdata_handler(attrs, db_fields, db_types)
         tablename = attrs.get('__table__', None)
         logging.info('found model: %s(table: %s)'%(name, tablename))
 
@@ -133,10 +160,11 @@ class Modelmetaclass(type):
         attrs['__fields__'] = fields
         attrs['__primary_key__'] = primary_key
         # 默认的sql语句
-        attrs['__select__'] = 'SELEC * FROM `%s`' %(tablename)
+        attrs['__select__'] = 'SELECT * FROM `%s`' %(tablename)
         attrs['__insert__'] = 'INSERT INTO `%s` (%s) VALUES (%s)' %(tablename, ','.join(['`%s`'%x for x in fields]), ','.join(['?' for i in range(len(fields)+1)]))
         attrs['__update__'] = 'UPDTE `%s` SET '
         attrs['__delete__'] = 'DELETE FROM `%s` WHERE `%s`=?'%(tablename, primary_key)
+        return type.__new__(cls, name, bases, attrs)
 
 
 # 所有orm的基类，包含数据库操作的具体函数,
@@ -193,5 +221,34 @@ class Model(dict, metaclass=Modelmetaclass):
         pass
 
 
+db_fields = ['ID', '品种名称', '学名', '原产地', '保存地', '品种类型',
+             '繁殖方式', '染色体倍数', '树型', '树姿', '树高（cm）',
+             '树幅（cm）', '最低分枝高度（cm）', '分枝密度', '新梢长度（cm）',
+             '节间长（cm）', '着叶数（片）', '叶片着生状态', '新梢生长势',
+             '新梢密度', '一芽三叶长（cm）', '一芽三叶百枚重（g）', '芽叶开张状态',
+             '芽叶颜色', '芽叶茸毛', '芽叶光泽', '持嫩性', '发芽密度', '发芽整齐度',
+             '叶长（cm）', '叶宽（cm）', '叶形指数', '叶片大小', '叶形', '叶色',
+             '叶面隆起性', '光泽性', '叶缘', '叶齿锐度', '叶齿密度', '叶齿深度',
+             '叶身', '叶片厚度', '叶质', '叶脉粗细', '叶脉对数', '叶尖', '春季萌芽期',
+             '春季真叶开展期', '春茶开采期', '年终休止期（月/日）', '花序',
+             '始花期（月/日）', '盛花期（月/日）', '终花期（月/日）', '花粉形状',
+             '花粉发芽率（%）', '花粉萌发孔数目', '花粉萌发孔类型', '花粉粒表面纹饰',
+             '萼片数（片）', '萼片茸毛', '花瓣数目（片）', '花瓣颜色', '花冠大小',
+             '花柱长度（mm）', '花柱分裂部位', '花柱分裂数', '子房茸毛', '雌/雄蕊比高',
+             '雄蕊数（个）', '花丝长度（mm）', '结实力', '果实室数', '种子成熟期（月/日）',
+             '种子形状', '种子色泽', '种子大小', '百粒种子重量（g）', '种子发芽率（%）',
+             '扦插发根率（%）', '扦插成活率（%）', '成苗率（%）', '轮产量（kg/轮）',
+             '单株产量（kg/株）', '单位面积产量（kg/公顷）', '丰产性', '化学成分（%）',
+             '萜烯指数（TI）', '适制性', '制茶品质', '成茶香气', '成茶滋味', '抗寒性',
+             '抗旱性', '抗病性', '抗虫性', '中国茶树']
 
+# 1	string
+# 2	integer
+# 3	float
+# 4	bool
+# 5	text
 
+db_types = [2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 3, 3, 3, 1, 3, 3, 2, 1, 1, 1, 3, 3, 1, 1, 1, 1, 1,
+         1, 1, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1,
+         1, 1, 3, 2, 1, 1, 2, 4, 2, 1, 1, 3, 1, 2, 4, 3, 2, 3, 1, 2, 1, 1, 1, 1, 3, 3, 3,
+         3, 3, 3, 3, 3, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 4]

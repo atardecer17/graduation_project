@@ -36,7 +36,6 @@ class RequestHandler:
 
         # 获取request中的参数值
         kw = {arg: value for arg, value in request.items() if arg in required_args}
-        print(request.items())
 
         # 获取('/blog/{id}')中的参数值 若无则不添加
         kw.update(request.match_info)
