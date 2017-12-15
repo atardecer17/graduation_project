@@ -1,0 +1,54 @@
+
+{% extends '__base__.html' %}
+
+{% block contents %}
+<div class="uk-grid ">
+<div class="uk-contain uk-container-center uk-width-8-10 uk-animation-scale-up">
+    <div id="superindex" class="uk-panel uk-panel-box uk-grid-margin uk-width-1-1">
+            <div class="uk-overflow-container">
+                <div class="uk-grid">
+                    <div class="uk-width-medium-6-10">
+                        <h2>品种名称：{{ cul_name[0] }}</h2>
+                        <h3>学名：{{ cul_name[1] }}</h3>
+                    </div>
+                    <div class="uk-grid uk-width-medium-4-10">
+                    <div class="uk-width-medium-4-10 uk-thumbnail uk-thumbnail-mini">
+                        <a href="../static/sample.jpg" data-uk-lightbox="{group:'my-group'}"><img src="../static/sample.jpg" ></a>
+                        
+                        <div class="uk-thumbnail-caption">caption</div>
+                    </div>
+                        <div class="uk-width-medium-1-10"></div>
+                     <div class="uk-width-medium-4-10 uk-thumbnail uk-thumbnail-mini">
+                         <a href="../static/sample2.jpg" data-uk-lightbox="{group:'my-group'}"><img src="../static/sample2.jpg" ></a>
+                        
+                         <div class="uk-thumbnail-caption">caption</div>
+                    </div>
+                    </div>
+                </div>
+                <hr>
+                <table class="uk-table uk-table-hover uk-table-striped uk-table-condensed">
+                {% for tr in content %}
+                    <tr>
+                        {% for k, v in tr.items() %}
+                        <th>{{ k }}:{{v}}</th>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+                </table>
+            </div>        
+    </div>
+    
+</div>
+<div class="page_num uk-width-1-10 uk-margin" data-uk-margin style="position: fixed; right: 0">
+                    {% with page=page-1 %}
+                    {% if page==0 %}
+                        {% set page=1 %}
+                    {% endif %}
+                    <a href="/detailed/{{ page }}" class="uk-button">上一页</a>
+                    {% endwith %}
+                    {% with page=page+1 %}
+                    <a href="/detailed/{{ page }}" class="uk-button">下一页</a>
+                    {% endwith %}
+</div>
+    </div>
+{% endblock %}

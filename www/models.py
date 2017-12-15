@@ -11,6 +11,7 @@ class Test(Model):
     user = StringField(name='user', primary_key=False, default=None)
 
 
+# 因为表中的字段太多且为中文字段 因此将映射关系放在 '__new__' 中进行读取输入
 class Content(Model):
     __table__ = "main"
 

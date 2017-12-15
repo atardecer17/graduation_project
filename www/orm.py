@@ -102,26 +102,16 @@ class TextField(Field):
         super().__init__(name, 'text', False, default)
 
 
-# 1	string
-# 2	integer
-# 3	float
-# 4	bool
-# 5	text
 
-def bigdata_handler(attrs, f, t):
+def bigdata_handler(attrs, f):
     """用于有大量中文字段时"""
-    for i in range(len(f)):
-        if f[i] == 'ID':
-            attrs[f[i]] = IntegerField(name=f[i], primary_key=True)
+    # 存成映射的字段名 原数据过于杂乱 数据类型全部存为了varchar(50)
+    # name 中可以存储其中文字段名, 建立个映射表col
+    for i in f:
+        if i == 'id':
+            attrs[i] = IntegerField(primary_key=True)
             continue
-        if t[i] == 1:
-            attrs[f[i]] = StringField(name=f[i])
-        if t[i] == 2:
-            attrs[f[i]] = IntegerField(name=f[i], default=None)
-        if t[i] == 3:
-            attrs[f[i]] = FloatField(name=f[i], default=None)
-        if t[i] == 4:
-            attrs[f[i]] = BooleanField(name=f[i])
+        attrs[i] = StringField()
 
 
 # 定义modelmetaclass 扫描继承自model的类 并对其类属性进行收集，整理，检查，
@@ -132,7 +122,7 @@ class Modelmetaclass(type):
             return type.__new__(cls, name, bases, attrs)
         # 如果创建的类的字段很多则就如此添加
         if name == 'Content':
-            bigdata_handler(attrs, db_fields, db_types)
+            bigdata_handler(attrs, db_fields)
         tablename = attrs.get('__table__', None)
         logging.info('found model: %s(table: %s)'%(name, tablename))
 
@@ -193,8 +183,10 @@ class Model(dict, metaclass=Modelmetaclass):
         return v
 
     @classmethod
-    async def find(cls, where=None, args=None, **kw):
+    async def find(cls, fields=None, where=None, args=None, **kw):
         sql = [cls.__select__]
+        if fields:
+            sql[0] = sql[0].replace('*', fields)
         if where:
             sql.append('WHERE %s' % where)
         orderby = kw.get('orderby', None)
@@ -210,7 +202,17 @@ class Model(dict, metaclass=Modelmetaclass):
                 args.extend(limit)
             else:
                 raise ValueError('Invalid limit value: %s' %str(limit))
+        like = kw.get("like", None)
+        if like:
+            sql.append('LIKE %s' % like)
         rs = await select(' '.join(sql), args)
+        return [cls(**r) for r in rs]
+
+    @classmethod
+    async def find_max(cls, field):
+        sql = [cls.__select__]
+        sql[0] = sql[0].replace('*', 'MAX(`%s`) as %s' % (field, field))
+        rs = await select(' '.join(sql), args=None)
         return [cls(**r) for r in rs]
 
     def save(self):
@@ -221,34 +223,6 @@ class Model(dict, metaclass=Modelmetaclass):
         pass
 
 
-db_fields = ['ID', '品种名称', '学名', '原产地', '保存地', '品种类型',
-             '繁殖方式', '染色体倍数', '树型', '树姿', '树高（cm）',
-             '树幅（cm）', '最低分枝高度（cm）', '分枝密度', '新梢长度（cm）',
-             '节间长（cm）', '着叶数（片）', '叶片着生状态', '新梢生长势',
-             '新梢密度', '一芽三叶长（cm）', '一芽三叶百枚重（g）', '芽叶开张状态',
-             '芽叶颜色', '芽叶茸毛', '芽叶光泽', '持嫩性', '发芽密度', '发芽整齐度',
-             '叶长（cm）', '叶宽（cm）', '叶形指数', '叶片大小', '叶形', '叶色',
-             '叶面隆起性', '光泽性', '叶缘', '叶齿锐度', '叶齿密度', '叶齿深度',
-             '叶身', '叶片厚度', '叶质', '叶脉粗细', '叶脉对数', '叶尖', '春季萌芽期',
-             '春季真叶开展期', '春茶开采期', '年终休止期（月/日）', '花序',
-             '始花期（月/日）', '盛花期（月/日）', '终花期（月/日）', '花粉形状',
-             '花粉发芽率（%）', '花粉萌发孔数目', '花粉萌发孔类型', '花粉粒表面纹饰',
-             '萼片数（片）', '萼片茸毛', '花瓣数目（片）', '花瓣颜色', '花冠大小',
-             '花柱长度（mm）', '花柱分裂部位', '花柱分裂数', '子房茸毛', '雌/雄蕊比高',
-             '雄蕊数（个）', '花丝长度（mm）', '结实力', '果实室数', '种子成熟期（月/日）',
-             '种子形状', '种子色泽', '种子大小', '百粒种子重量（g）', '种子发芽率（%）',
-             '扦插发根率（%）', '扦插成活率（%）', '成苗率（%）', '轮产量（kg/轮）',
-             '单株产量（kg/株）', '单位面积产量（kg/公顷）', '丰产性', '化学成分（%）',
-             '萜烯指数（TI）', '适制性', '制茶品质', '成茶香气', '成茶滋味', '抗寒性',
-             '抗旱性', '抗病性', '抗虫性', '中国茶树']
+db_fields = ['id'] + ['col_%s' % i for i in range(1, 101)]
 
-# 1	string
-# 2	integer
-# 3	float
-# 4	bool
-# 5	text
 
-db_types = [2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 3, 3, 3, 1, 3, 3, 2, 1, 1, 1, 3, 3, 1, 1, 1, 1, 1,
-         1, 1, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1,
-         1, 1, 3, 2, 1, 1, 2, 4, 2, 1, 1, 3, 1, 2, 4, 3, 2, 3, 1, 2, 1, 1, 1, 1, 3, 3, 3,
-         3, 3, 3, 3, 3, 1, 3, 3, 1, 1, 1, 1, 1, 1, 1, 1, 4]

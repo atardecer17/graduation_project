@@ -5,6 +5,7 @@ web框架 便于handler函数的编写 将request集中处理 构建response对�
 import asyncio, os, inspect, logging, functools
 from aiohttp import web
 from apis import APIError
+from urllib import parse
 
 
 # 定义handler的装饰器，将方法和路径写入函数属性中 便于后面的调用等 这里直接运用偏函数 将method固定即可
@@ -22,7 +23,7 @@ get = functools.partial(handler, method='GET')
 post = functools.partial(handler, method='POST')
 
 
-# 下面是对request进行处理 巨绕！ 巨绕！ 巨绕！
+# 下面是对request进行处理 (原逻辑巨绕！ 巨绕！ 巨绕！先对视图函数设定的参数进行判断 再对request中的数据进行处理， 下为改后的简易版 逻辑不够之前严谨）
 # 从url函数分析其需要接收的函数，从request中获取必要的参数
 # 将url函数封装成一个协程
 class RequestHandler:
@@ -40,9 +41,16 @@ class RequestHandler:
         # 获取('/blog/{id}')中的参数值 若无则不添加
         kw.update(request.match_info)
 
+        # 获取get的参数值
+        qs = request.query_string
+        if qs:
+            for k, v in parse.parse_qs(qs, True).items():
+                kw.update({k: v[0]})
         # 若有request参数的话将request也加入
         if 'request' in required_args:
             kw['request'] = request
+        if hasattr(request, '__data__'):
+            kw.update(request.__data__)
 
         # 检查参数表中的数据
         for key, arg in required_args.items():

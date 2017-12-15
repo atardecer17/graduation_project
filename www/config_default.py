@@ -5,7 +5,7 @@ configs = {
         'port': 3306,
         'user': 'Avalon',
         'password': 'password',
-        'db': 'test'
+        'db': 'tea_database'
     }
 }
 

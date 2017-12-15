@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="../static/css/uikit.gradient.min.css">
+    <link rel="stylesheet" type="text/css" href="../static/css/csomponents/notify.min.css">
+    <link rel="stylesheet" type="text/css" href="../static/css/components/slider.min.css">
+    <link rel="stylesheet" type="text/css" href="../static/css/components/slidenav.min.css">
+    <script src="../static/jquery-3.2.1.min.js"></script>
+    <script src="../static/js/uikit.min.js"></script>
+    <script src="../static/js/components/notify.js"></script>
+    <script src="../static/js/components/slider.min.js"></script>
+    <script src="../static/js/components/lightbox.min.js"></script>
+</head>
+<body>
+    <nav class="uk-width-1-1 uk-navbar " > 
+            <div class="uk-navbar-brand">NWSAUF_TEA</div>
+            <ul class="uk-navbar-nav uk-hidden-small">
+                <a href="#canvas" class="uk-navbar-toggle uk-visible-small" data-uk-offcanvas></a>
+                <li ><a href="/"><i class="uk-icon-home"></i>主页</a></li>
+                {% if not page %}
+                    {% set page=1 %}
+                {% endif %}
+                <li ><a href="/detailed/{{page}}"><i class="uk-icon-cog"></i>品种详情</a></li>
+                <li ><a href="/all_cul/1"><i class="uk-icon-circle-o-notch"></i>全部品种</a></li>
+                <li class="uk-parent" data-uk-dropdown>
+                    <a href>test<i class="uk-icon-caret-down"></i></a>
+                    <div class="uk-dropdown uk-dropdown-navbar" >
+                        <ul class="uk-nav uk-nav-navbar">
+                            <li><a href="#">test</a></li>
+                            <li><a href="#">test</a></li>
+                            <li><a href="#">test</a></li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+            <nav class="uk-navbar-flip">
+                    <ul class="uk-navbar-nav">
+                        <li><a href="">注册</a></li>
+                        <li ><a href="#">登录</a></li>
+                    </ul>
+            </nav>
+        </nav>
+    <div class="uk-width-1-1" style="height: 30px; background-color: deepskyblue"></div>
+<!--
+    <div class=" uk-width-2-8">
+    <div class="uk-slidenav-position uk-width-medium-3-4" style="height: 300px" data-uk-slider="{infinite: false}">
+        <div class="uk-slider-container" >
+            <ul class="uk-slider uk-grid-width-medium-1-1">
+                <li><div class="uk-panel uk-panel-box" style="background-color: aqua; height:200px"></div></li>
+                <li><div class="uk-panel uk-panel-box" style="background-color: darkblue ; height:200px ">22111</div></li>
+                <li><div class="uk-panel uk-panel-box" style="background-color: gainsboro ; height:200px">211</div></li>
+                <li><div class="uk-panel uk-panel-box" style="background-color: firebrick ; height:200px">2132</div></li>
+                <li><div class="uk-panel uk-panel-box" style="background-color: ghostwhite ; height:200px">3213</div></li>
+            </ul>
+        </div>
+        <a href="#" class="uk-slidenav uk-slidenav-contrast uk-slidenav-previous" data-uk-slider-item="previous" style="width: 200px; height: 200px; display: inline-block">ffffff</a>
+        <a href="#" class="uk-slidenav uk-slidenav-contrast uk-slidenav-next" data-uk-slider-item="next" style="width: 200px; height: 200px; display: inline-block">ssdd</a>
+
+    </div>
+   </div>
+-->
+    
+            {% block contents %}
+            {% endblock %}
+
+    
+<!--
+    <div class="login hide">
+        <div class="explain">
+            <h1>仅管理员登录</h1>
+        </div>
+        <div class="log-box">
+            <div class="username">
+                <input type="text" placeholder="username" >
+            </div>
+            <div class="password">
+                <input type="password" placeholder="password">
+            </div>
+            <div class="sign-in">
+                <input type="button" value="登录">
+                <input class="cancel" type="button" value="取消">
+            </div>
+
+        </div>
+    </div> 
+-->
+
+    <div class="uk-width-1-1 uk-text-center uk-text-large uk-text-contrast uk-grid-margin" style="background-color: black">
+        <p style="padding-top: 40px">本网站目前为测试阶段</p>
+        <p>有任何建议请联系我</p>
+        <p style="padding-bottom: 20px;">atardecer@qq.com</p>
+    </div>
+    
+    
+    <script>
+
+    </script>
+</body>    
+</html>

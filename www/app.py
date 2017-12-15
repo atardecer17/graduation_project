@@ -3,16 +3,11 @@ import logging; logging.basicConfig(level=logging.INFO)
 import asyncio
 import os
 import json
-
 from aiohttp import web
 from jinja2 import Environment, FileSystemLoader
-
 from config import configs
-
 import orm
 from coroweb import add_routes, add_static
-
-
 
 # jinja2初始化
 def init_jinja2(app, **kw):
@@ -24,7 +19,6 @@ def init_jinja2(app, **kw):
         'variable_start_string': kw.get('variable_start_string', '{{'),
         'variable_end_string': kw.get('variable_end_string', '}}'),
         'auto_reload': kw.get('auto_reload', True)
-
     }
     path = kw.get('path', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates'))
     logging.info('set jinja2 template path: %s' % path)
@@ -45,6 +39,20 @@ async def logger_factory(app, handler):
         logging.info('Request: %s %s' %(request.method, request.path))
         return await handler(request)
     return logger
+
+# 处理post数据
+async def postdata_factory(app, handler):
+    async def parse_data(request):
+        if request.method == "POST":
+            if request.content_type.startswith("application/json"):
+                request.__data__ = await request.json()
+                logging.info("request json: %s " % str(request.__data__))
+            if request.content_type.startswith("application/x-www-form-urlencoded"):
+                data = await request.post()
+                request.__data__ = dict(**data)
+                logging.info("request form: %s" % str(request.__data__))
+        return await handler(request)
+    return parse_data
 
 # 先调用handler 再将结果进行处理后返回response对象
 async def response_factory(app, handler):
@@ -67,26 +75,18 @@ async def response_factory(app, handler):
             return resp
     return response
 
-
-# 对post的不同数据格式进行处理
-async def data_factory(app, handler):
-    pass
-
-
 async def init(loop):
     await orm.create_pool(loop=loop, **configs['db'])
     app = web.Application(loop=loop, middlewares=[
-        logger_factory, response_factory
+        logger_factory, postdata_factory, response_factory
     ])
     init_jinja2(app)
     add_routes(app, 'handlers')
     add_static(app)
-    srv = await loop.create_server(app.make_handler(), '127.0.0.1', 9004)
+    srv = await loop.create_server(app.make_handler(), '192.168.139.1', 9000)
     logging.info('server started at http://127.0.0.1:9000')
     return srv
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(init(loop))
 loop.run_forever()
-
-

@@ -1,0 +1,75 @@
+
+{% extends '__base__.html' %}
+{% block contents %}
+
+<div class= "uk-grid">
+    <div class="uk-width-2-10 uk-hidden-small">
+        <h4>品种数目：{{ num }}</h4>
+        <div class="uk-contain uk-overflow-container" style="max-height: 600px;">
+        <ol class="uk-list-striped uk-list ">
+            {% for r in result %}
+            {% with cul_name=r[0] %}
+            <li>{{cul_name[0]}}</li>
+            {% endwith %}
+            {% endfor %}
+        </ol>
+    </div>
+    </div>
+    <div class="uk-slidenav-position uk-width-8-10 uk-grid uk-container-center" data-uk-slider="{infinite: false}">
+        <div class="uk-slider-container uk-width-medium-9-10">
+            <ul class="uk-slider ">
+                {% for r in result %}
+                <li> <div id="superindex" class="uk-panel uk-panel-box uk-width-medium-1-1">
+                    <div class="uk-width-medium-1-1">
+                    <div class="uk-grid uk-width-*">
+                    <div class="uk-width-medium-5-10">
+                         {% with cul_name=r[0] %}
+                        <h2>品种名称：{{ cul_name[0] }}</h2>
+                        <h3>学名：{{ cul_name[1] }}</h3>
+                        {% endwith %}
+                    </div>
+                    <div class="uk-grid uk-width-medium-5-10">
+                    <div class="uk-width-medium-1-2 uk-thumbnail uk-thumbnail-mini">
+                        <a href="../static/sample.jpg" data-uk-lightbox="{group:'my-group'}"><img src="../static/sample.jpg" ></a>
+                        
+                        <div class="uk-thumbnail-caption">caption</div>
+                    </div>
+                     <div class="uk-width-medium-1-2 uk-thumbnail uk-thumbnail-mini">
+                         <a href="../static/sample2.jpg" data-uk-lightbox="{group:'my-group'}"><img src="../static/sample2.jpg" ></a>
+                        
+                         <div class="uk-thumbnail-caption">caption</div>
+                    </div>
+                    </div>
+                   </div>
+                      </div>
+                        <hr>
+                        <table class=" uk-table uk-table-hover uk-table-striped uk-table-condensed">
+                            {% with content=r[1]%}
+                            {% for tr in content %}
+                            <tr >
+                            {% for k, v in tr.items() %}
+                            <th>{{ k }}:{{v}}</th>
+                            {% endfor %}
+                            </tr>
+                            {% endfor %}
+                            {% endwith %}
+                        </table>
+                        </div>
+                    
+                  
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="uk-width-medium-1-10 uk-grid-magin uk-grid" style="position: fixed; right:4%">
+            <a href="" class="uk-width-medium-1-1 uk-slidenav-contrast uk-slidenav-previous uk-margin" data-uk-slider-item="previous"><input type="button" class="uk-button" value="上一页"></a>
+            <a href="" class="uk-width-medium1-1 uk-slidenav-contrast uk-slidenav-next uk-margin" data-uk-slider-item="next" ><input type="button" class="uk-button" value="下一页"></a>
+        </div>
+    </div>
+    
+    
+        
+    
+</div>
+
+{% endblock %}
