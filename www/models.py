@@ -18,3 +18,12 @@ class Content(Model):
     """
     __table__ = "main"
 
+class User(Model):
+    '''
+    建立用户表映射
+    '''
+
+    __table__ = "user"
+    id = IntegerField(name="id", primary_key=True)
+    username = StringField(name="username")
+    passwd = StringField(name="passwd")

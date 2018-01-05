@@ -1,19 +1,21 @@
-
+from cookie_handler import user_to_cookie
 from coroweb import get, post
-from models import Content
+from models import Content, User
+from aiohttp import web
+from apis import *
+import hashlib
 import logging
 import asyncio
 import pickle
 
+COOKIE_NAME = "nwcookie"
+COOKIE_SERC = "nwsuaf"
 
 def findResult_factory(data):
     """
     对SELECT到的数据进行处理
-
-    将字典中的数据搞成三个三个分组有点蠢 直接在模板中用两个for循环嵌套不就好了  jinja2中也支持 for i in range(val)
-
-    :param data: 通过SELECT获取到的数据 列表中嵌套字典的形式
-    :return: 返回找到的数据数目以及数据的详细信息 将品种名称和学名单独从字典拿出来 然后和其他数据共同组成一个列表，然后将字典中的数据三个三个分组
+    :param data:
+    :return:
     """
     f = open('./required_data/fields.pkl', 'rb')
     db_fields = pickle.load(f)
@@ -30,7 +32,6 @@ def findResult_factory(data):
         cul_name.append(lis.pop(0)[1])
         data_result.append([cul_name, lis, page])
     num = len(data)
-    logging.info(data_result)
     return num, data_result
 
 @get("/")
@@ -109,3 +110,28 @@ async def search_name(cul_name):
         "result": result,
         "num": num
     }
+
+@post("/api/user/login")
+async def login(username, passwd):
+    if not username or not passwd:
+        raise APIValueError("username or passwd", "Invalid username or Invalid passwd")
+    wh = "`username`=`%s`" % username
+    user = await User.find(where=wh)
+    if not user:
+        raise APIValueError("username", "username not exist")
+    user = user[0]
+    # check passwd
+    sha1 = hashlib.sha1()
+    sha1.update(passwd)
+    if user.passwd != sha1.hexdigest():
+        raise APIValueError("passwd", "Invalid passwd")
+    # set cookie
+    r = web.Response()
+    cookie_str = user_to_cookie(user, max_age=54000)
+    r.set_cookie(COOKIE_NAME, cookie_str, max_age=54000, httponly=True)
+    user.passwd = "*******"
+    r.content_type = "application/json"
+    r.body = json.dump(user, ensure_ascii=False).encode("utf-8")
+    return r
+
+
