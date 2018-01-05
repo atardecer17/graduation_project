@@ -45,10 +45,12 @@
                         <hr>
                         <table class=" uk-table uk-table-hover uk-table-striped uk-table-condensed">
                             {% with content=r[1]%}
-                            {% for tr in content %}
-                            <tr >
-                            {% for k, v in tr.items() %}
-                            <th>{{ k }}:{{v}}</th>
+                            {% for i in range(0, content|length, 3) %}
+                            <tr>
+                            {% for j in range(i, i+3) %}
+                            {% if j < content|length %}
+                                <td>{{ content[j][0] }}:{{ content[j][1] }}</td>
+                            {% endif %}
                             {% endfor %}
                             </tr>
                             {% endfor %}

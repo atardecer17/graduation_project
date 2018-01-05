@@ -30,6 +30,13 @@ async def create_pool(loop, **kw):
 
 # 对数据库进行查询 并根据size返回查询结果
 async def select(sql, args, size=None):
+    """
+    之前用args传入参数始终失败 回头记得再研究一下 args的参数形式到底是怎样的
+    :param sql:
+    :param args:
+    :param size:
+    :return:result
+    """
     log(sql, args)
     async with __pool.get() as conn:
         async with conn.cursor(aiomysql.DictCursor) as cur:
@@ -62,6 +69,9 @@ async def execute(sql, args, autocommit=True):
 
 # 定义Field基类
 class Field:
+    """
+    Field 中定义的功能太少了  回头还要再去学学数据库
+    """
     def __init__(self, name, column_type, primary_key, default):
         self.name = name
         self.column_type = column_type
@@ -102,7 +112,6 @@ class TextField(Field):
         super().__init__(name, 'text', False, default)
 
 
-
 def bigdata_handler(attrs, f):
     """用于有大量中文字段时"""
     # 存成映射的字段名 原数据过于杂乱 数据类型全部存为了varchar(50)
@@ -123,6 +132,7 @@ class Modelmetaclass(type):
         # 如果创建的类的字段很多则就如此添加
         if name == 'Content':
             bigdata_handler(attrs, db_fields)
+        # 在服务器上循环完之后attrs中建的顺序乱掉了？？？？
         tablename = attrs.get('__table__', None)
         logging.info('found model: %s(table: %s)'%(name, tablename))
 
@@ -222,7 +232,7 @@ class Model(dict, metaclass=Modelmetaclass):
     def remove(self):
         pass
 
-
+# 非动态的后面要出问题 后面要改成动态的  这样的一种生成映射关系的方法感觉还是有点问题 要改
 db_fields = ['id'] + ['col_%s' % i for i in range(1, 101)]
 
 

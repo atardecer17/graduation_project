@@ -27,6 +27,9 @@ post = functools.partial(handler, method='POST')
 # 从url函数分析其需要接收的函数，从request中获取必要的参数
 # 将url函数封装成一个协程
 class RequestHandler:
+    """
+    感觉这里的逻辑不是很严谨 后头再看看 改改
+    """
     def __init__(self, func):
         self._func = asyncio.coroutine(func)
 

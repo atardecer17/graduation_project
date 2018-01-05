@@ -27,12 +27,12 @@
                      </thead>
                     {% for data in sample_data %}
                     <tr>
-                    {% with all_id=data['id']%}
-                    {% for k, v in data.items() %}
-                        {% if k=="col_1" %}
-                        <th><a href="/detailed/{{all_id}}">{{v}}</a></th>
+                    {% with all_id=data[0][1]%}
+                    {% for item in data %}
+                        {% if item[0] == "col_1" %}
+                        <td><a href="/detailed/{{all_id}}">{{ item[1] }}</a></td>
                         {% else %}
-                        <th>{{v}}</th>
+                        <td>{{ item[1] }}</td>
                         {% endif %}
                     {% endfor %}
                     {% endwith %}
