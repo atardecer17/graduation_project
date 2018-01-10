@@ -1,2 +1,2 @@
 # graduation_project
-a database of tea plant
+A query website of tea germplasm resources 
